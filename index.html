@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>F1 — Blacklist · Шансы на титул</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+  <header class="hero">
+    <p class="hero__tag">SEASON 2026 · 22 GRANDS PRIX</p>
+    <h1 class="hero__title">BLACKLIST</h1>
+    <p class="hero__sub">Калькулятор математических шансов на титул</p>
+  </header>
+
+  <div id="welcome-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="welcome-title" hidden>
+    <div class="modal">
+      <h2 id="welcome-title" class="modal__title">Добро пожаловать</h2>
+      <div class="modal__body">
+        <p><strong>Blacklist</strong> — неофициальный калькулятор для сезона Формулы-1 2026 (22 этапа, календарь без отменённых весной Гран При).</p>
+        <p>Выберите, <strong>сколько этапов уже прошло</strong> — так задаётся остаток сезона и список оставшихся гонок (включая спринты).</p>
+        <p>Введите <strong>текущие очки</strong> каждого пилота. Список ниже автоматически сортируется по убыванию очков. Введённые данные и выбранное число этапов сохраняются в этом браузере после перезагрузки страницы.</p>
+        <p>Для каждого гонщика: есть ли ещё <strong>математический шанс</strong> на титул и <strong>индекс в процентах</strong> — насколько его максимально возможный итог (если на каждом оставшемся ГП он берёт все очки по модели календаря) близок к такому же «потолку» у текущего лидера.</p>
+      </div>
+      <div class="modal__actions">
+        <button type="button" class="btn btn--ghost" id="welcome-dismiss-forever">Больше не показывать</button>
+        <button type="button" class="btn" id="welcome-ok">Ясно</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="panel controls">
+    <div class="controls__row">
+      <label class="label" for="completed">Уже прошло этапов</label>
+      <select id="completed" class="select"></select>
+    </div>
+    <div id="summary" class="summary"></div>
+    <p class="hint">Очки вводятся вручную; пересчёт и сортировка по очкам — автоматически. Индекс считается от максимума очков на оставшихся этапах (обычный уик-энд и спринт), без симуляций. Очки и число прошедших этапов сохраняются в браузере (localStorage) до следующего визита.</p>
+  </section>
+
+  <main>
+    <ul id="drivers" class="blacklist"></ul>
+  </main>
+
+  <footer class="footer">
+    <p>Индекс: сравнение максимально возможного финала пилота с «потолком» лидера при тех же оставшихся ГП. Очки за лучший круг не учитываются.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
