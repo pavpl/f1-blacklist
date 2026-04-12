@@ -15,11 +15,43 @@
 
 Откройте [`index.html`](index.html) в браузере (двойной клик или через локальный сервер — не обязательно).
 
-## GitHub Pages
+## Публикация на GitHub и GitHub Pages
 
-После публикации репозитория включите **Settings → Pages → Build and deployment → Source: Deploy from a branch**, ветка **main**, папка **/ (root)**. Сайт будет доступен по адресу:
+Репозиторий уже с инициализированным Git (ветка `main`). Дальше — с вашей машины.
 
-`https://<ваш-username>.github.io/<имя-репозитория>/`
+### 1. Войти в GitHub CLI
+
+```bash
+gh auth login
+```
+
+Выберите GitHub.com → HTTPS → авторизация через браузер.
+
+### 2. Создать репозиторий и отправить код
+
+В каталоге проекта:
+
+```bash
+cd "путь/к/f1-blacklist"
+gh repo create f1-blacklist --public --source=. --remote=origin --push
+```
+
+Если репозиторий уже создан вручную на github.com:
+
+```bash
+git remote add origin https://github.com/<ВАШ-НИК>/f1-blacklist.git
+git push -u origin main
+```
+
+### 3. Включить GitHub Pages
+
+**Через сайт:** репозиторий → **Settings** → **Pages** → **Build and deployment** → **Source: Deploy from a branch** → ветка **main**, папка **/ (root)** → **Save**.
+
+Через 1–2 минуты сайт появится по адресу:
+
+**`https://<ВАШ-НИК>.github.io/f1-blacklist/`**
+
+(Если назвали репозиторий иначе — замените последний сегмент в URL.)
 
 ## Структура
 
