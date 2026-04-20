@@ -152,6 +152,7 @@
   const elCompleted = document.getElementById("completed");
   const elSummary = document.getElementById("summary");
   const elDrivers = document.getElementById("drivers");
+  const elApplyPoints = document.getElementById("apply-points");
   const elWelcomeOverlay = document.getElementById("welcome-overlay");
   const elWelcomeOk = document.getElementById("welcome-ok");
   const elWelcomeDismiss = document.getElementById("welcome-dismiss-forever");
@@ -282,12 +283,6 @@
     saveState();
   }
 
-  let debounceTimer = null;
-  function scheduleRun() {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(runCalculations, 320);
-  }
-
   function closeWelcome(saveNeverShow) {
     if (saveNeverShow) {
       try {
@@ -314,9 +309,7 @@
   applyState(loadState());
 
   elCompleted.addEventListener("change", runCalculations);
-  elDrivers.addEventListener("input", (e) => {
-    if (e.target.classList.contains("points-input")) scheduleRun();
-  });
+  if (elApplyPoints) elApplyPoints.addEventListener("click", runCalculations);
 
   if (elWelcomeOk) elWelcomeOk.addEventListener("click", () => closeWelcome(false));
   if (elWelcomeDismiss)
