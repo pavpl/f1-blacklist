@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  const N_DRIVERS = 22;
+  const N_DRIVERS = 23;
 
   /** Макс. очков за уик-энд на пилота: без очков за лучший круг */
   const MAX_NORMAL = 25;
@@ -30,6 +30,7 @@
     { id: "col", name: "Franco Colapinto", num: 43, team: "Alpine" },
     { id: "per", name: "Sergio Pérez", num: 11, team: "Cadillac" },
     { id: "bot", name: "Valtteri Bottas", num: 77, team: "Cadillac" },
+    { id: "tsu", name: "Yuki Tsunoda", num: 22, team: "Racing Bulls" }
   ];
 
   const EVENTS = [
@@ -48,6 +49,7 @@
     { short: "Монца", sprint: false },
     { short: "Мадрид", sprint: false },
     { short: "Баку", sprint: false },
+    { short: "Малайзия", sprint: false },
     { short: "Сингапур", sprint: true },
     { short: "Остин", sprint: false },
     { short: "Мексика", sprint: false },
@@ -101,78 +103,20 @@
   }
 
   const STORAGE_HIDE_WELCOME = "f1-blacklist-hide-welcome";
-  const STORAGE_STATE = "f1-blacklist-state";
-  const STATE_VERSION = 1;
 
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_STATE);
-      if (!raw) return null;
-      const data = JSON.parse(raw);
-      if (!data || data.v !== STATE_VERSION || !Array.isArray(data.points)) return null;
-      if (data.points.length !== N_DRIVERS) return null;
-      const c = parseInt(data.completed, 10);
-      if (!Number.isFinite(c) || c < 0 || c > TOTAL_RACES) return null;
-      const pts = new Array(N_DRIVERS);
-      for (let i = 0; i < N_DRIVERS; i++) {
-        const x = Number(data.points[i]);
-        if (!Number.isFinite(x) || x < 0) return null;
-        pts[i] = Math.min(Math.floor(x), 1e6);
-      }
-      return { completed: c, points: pts };
-    } catch (_) {
-      return null;
-    }
-  }
+  let completedRaces = 0;
 
-  function applyState(st) {
-    if (!st) return;
-    elCompleted.value = String(st.completed);
-    for (let i = 0; i < N_DRIVERS; i++) {
-      const inp = document.getElementById(`pts-${i}`);
-      if (inp) inp.value = String(st.points[i]);
-    }
-  }
-
-  function saveState() {
-    try {
-      const points = readPoints();
-      const completed = parseInt(elCompleted.value, 10) || 0;
-      localStorage.setItem(
-        STORAGE_STATE,
-        JSON.stringify({
-          v: STATE_VERSION,
-          completed,
-          points,
-        })
-      );
-    } catch (_) {}
-  }
-
-  const elCompleted = document.getElementById("completed");
   const elSummary = document.getElementById("summary");
   const elDrivers = document.getElementById("drivers");
-  const elApplyPoints = document.getElementById("apply-points");
   const elWelcomeOverlay = document.getElementById("welcome-overlay");
   const elWelcomeOk = document.getElementById("welcome-ok");
   const elWelcomeDismiss = document.getElementById("welcome-dismiss-forever");
 
-  function buildCompletedSelect() {
-    elCompleted.innerHTML = "";
-    for (let k = 0; k <= TOTAL_RACES; k++) {
-      const opt = document.createElement("option");
-      opt.value = String(k);
-      opt.textContent = k === 0 ? "0 (старт сезона)" : String(k);
-      elCompleted.appendChild(opt);
-    }
-    elCompleted.value = "3";
-  }
-
   function readPoints() {
     const pts = new Array(N_DRIVERS);
     for (let i = 0; i < N_DRIVERS; i++) {
-      const inp = document.getElementById(`pts-${i}`);
-      const v = inp ? parseInt(inp.value, 10) : 0;
+      const valEl = document.getElementById(`pts-${i}`);
+      const v = valEl ? parseInt(valEl.textContent, 10) : 0;
       pts[i] = Number.isFinite(v) ? Math.max(0, v) : 0;
     }
     return pts;
@@ -191,8 +135,8 @@
           <p class="card__meta">#${d.num} · ${d.team}</p>
         </div>
         <div class="card__points-wrap">
-          <label for="pts-${i}">Очки</label>
-          <input type="number" id="pts-${i}" class="points-input" min="0" step="1" value="0" />
+          <span class="points-label">Очки:</span>
+          <span id="pts-${i}" class="points-value" style="font-size: 1.5rem; font-weight: bold;">0</span>
         </div>
         <div class="card__status" data-status></div>
       `;
@@ -232,7 +176,7 @@
   }
 
   function runCalculations() {
-    const completed = parseInt(elCompleted.value, 10) || 0;
+    const completed = completedRaces || 0;
     const remaining = EVENTS.slice(completed);
     const points = readPoints();
     const maxPts = Math.max.apply(null, points);
@@ -279,15 +223,13 @@
       }
       st.innerHTML = html;
     });
-
-    saveState();
   }
 
   function closeWelcome(saveNeverShow) {
     if (saveNeverShow) {
       try {
         localStorage.setItem(STORAGE_HIDE_WELCOME, "1");
-      } catch (_) {}
+      } catch (_) { }
     }
     elWelcomeOverlay.hidden = true;
     document.body.classList.remove("is-modal-open");
@@ -297,24 +239,69 @@
     let hide = false;
     try {
       hide = localStorage.getItem(STORAGE_HIDE_WELCOME) === "1";
-    } catch (_) {}
+    } catch (_) { }
     if (!hide && elWelcomeOverlay) {
       elWelcomeOverlay.hidden = false;
       document.body.classList.add("is-modal-open");
     }
   }
 
-  buildCompletedSelect();
-  renderDriverCards();
-  applyState(loadState());
+  async function fetchCurrentStandings() {
+    try {
+      elSummary.innerHTML = "<em>Загрузка данных с Jolpi API...</em>";
+      const res = await fetch("https://api.jolpi.ca/ergast/f1/current/driverStandings.json");
+      if (!res.ok) throw new Error("API Network Error");
+      const data = await res.json();
 
-  elCompleted.addEventListener("change", runCalculations);
-  if (elApplyPoints) elApplyPoints.addEventListener("click", runCalculations);
+      const table = data.MRData.StandingsTable;
+      const lists = table.StandingsLists || [];
+      if (lists.length === 0) return false;
+      const list = lists[0];
+      const currentRound = parseInt(list.round, 10);
+      const standings = list.DriverStandings || [];
+
+      // Map points
+      standings.forEach(st => {
+        let expectedCode = (st.Driver.code || "").toLowerCase();
+        let idx = -1;
+
+        DRIVERS.forEach((d, i) => {
+          if (d.id === expectedCode) {
+            idx = i;
+          }
+        });
+
+        if (idx !== -1) {
+          const valEl = document.getElementById(`pts-${idx}`);
+          if (valEl) valEl.textContent = st.points;
+        }
+      });
+
+      // Update completed round
+      if (!isNaN(currentRound) && currentRound >= 0 && currentRound <= TOTAL_RACES) {
+        completedRaces = currentRound;
+      }
+
+      return true;
+    } catch (err) {
+      console.warn("Failed to fetch current standings auto:", err);
+      return false;
+    }
+  }
+
+  renderDriverCards();
+
+  (async function initialize() {
+    // Attempt fetching from API
+    await fetchCurrentStandings();
+
+    // Final calculations
+    runCalculations();
+    openWelcomeIfNeeded();
+  })();
 
   if (elWelcomeOk) elWelcomeOk.addEventListener("click", () => closeWelcome(false));
   if (elWelcomeDismiss)
     elWelcomeDismiss.addEventListener("click", () => closeWelcome(true));
 
-  runCalculations();
-  openWelcomeIfNeeded();
 })();
