@@ -135,8 +135,11 @@
           <p class="card__meta">#${d.num} · ${d.team}</p>
         </div>
         <div class="card__points-wrap">
-          <span class="points-label">Очки:</span>
-          <span id="pts-${i}" class="points-value" style="font-size: 1.5rem; font-weight: bold;">0</span>
+          <span class="points-label">Очки / Макс:</span>
+          <div style="display: flex; align-items: baseline; gap: 0.35rem;">
+            <span id="pts-${i}" class="points-value" style="font-size: 1.5rem; font-weight: bold;">0</span>
+            <span id="max-${i}" class="points-max" style="color: var(--muted); font-size: 1.1rem; font-weight: 600;">/ 0</span>
+          </div>
         </div>
         <div class="card__status" data-status></div>
       `;
@@ -198,6 +201,10 @@
       const i = +card.dataset.idx;
       const st = card.querySelector("[data-status]");
       const p = points[i];
+      
+      const maxEl = document.getElementById(`max-${i}`);
+      if (maxEl) maxEl.textContent = `/ ${p + W}`;
+
       const mathAlive = p + W >= maxPts;
       const idxPct = maxPotentialIndexPercent(p, maxPts, W, remaining.length);
       const pctStr = idxPct.toFixed(1);
