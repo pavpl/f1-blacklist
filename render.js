@@ -35,6 +35,20 @@ export function formatDateTime(timestamp) {
   }
 }
 
+const FLAG_PATTERN = /^[a-z]{2}$/;
+
+export function flagMarkup(code, className = "") {
+  const value = String(code || "").toLowerCase();
+  if (!FLAG_PATTERN.test(value)) return "";
+  const classes = ["flag-icon", className].filter(Boolean).join(" ");
+  return `<img class="${classes}" src="assets/flags/${value}.svg" alt="" width="20" height="15" loading="lazy" decoding="async" />`;
+}
+
+export function teamMark(short, color, size = "sm") {
+  const label = String(short || "").trim() || "—";
+  return `<span class="team-mark team-mark--${size}" style="--team-color:${escapeHtml(color)}" aria-hidden="true">${escapeHtml(label)}</span>`;
+}
+
 export function countdownText(race) {
   const target = raceStart(race);
   const parts = countdownParts(target);
@@ -177,11 +191,20 @@ export function renderCards(items, context) {
       const key = isTeam ? item.id : item.code;
       const color = isTeam ? item.color : item.teamColor;
       const flag = isTeam ? "" : item.flag || "";
-      const number = isTeam ? item.short || "—" : item.number || "—";
       const teamDrivers = isTeam ? context.driversByTeam?.get(item.id) || [] : [];
-      const meta = isTeam
+      const metaText = isTeam
         ? teamDrivers.map((driver) => driver.name.split(" ").slice(-1)[0]).join(" · ") || "—"
         : `${item.teamName} · #${item.number}`;
+      const metaHtml = isTeam
+        ? teamDrivers
+            .map(
+              (driver) =>
+                `${flagMarkup(driver.flag, "flag-icon--xs")}${escapeHtml(
+                  driver.name.split(" ").slice(-1)[0]
+                )}`
+            )
+            .join(" · ") || "—"
+        : escapeHtml(metaText);
       const eliminated = item.status === "eliminated" || item.status === "seasonOver";
       const rank = item.position;
       const rankClass = rank === 1 ? " rank--1" : rank === 2 ? " rank--2" : rank === 3 ? " rank--3" : "";
@@ -200,17 +223,21 @@ export function renderCards(items, context) {
         item.status === "eliminated"
           ? ` Даже максимум (${item.max}) меньше текущих очков лидера (${data.leaderPoints}).`
           : "";
-      const teamNote = isTeam ? ` Пилоты: ${escapeHtml(meta)}.` : extraTeams;
+      const teamNote = isTeam ? ` Пилоты: ${escapeHtml(metaText)}.` : extraTeams;
 
       return `
         <article class="card${item.isLeader ? " card--leader" : ""}${eliminated ? " card--out" : ""}"
           style="--team-color:${escapeHtml(color)}" aria-labelledby="card-${escapeHtml(key)}">
           <div class="card__top">
             <span class="card__rank${rankClass}">${rank}</span>
-            <span class="card__num${isTeam ? " card__num--team" : ""}">${escapeHtml(number)}</span>
+            ${
+              isTeam
+                ? teamMark(item.short || "N/A", color, "lg")
+                : `<span class="card__num">${escapeHtml(item.number || "—")}</span>`
+            }
             <div class="card__info">
-              <h3 class="card__name" id="card-${escapeHtml(key)}">${flag ? `${flag} ` : ""}${escapeHtml(item.name)}</h3>
-              <p class="card__meta"><span class="team-dot"></span><span>${escapeHtml(meta)}</span></p>
+              <h3 class="card__name" id="card-${escapeHtml(key)}">${flagMarkup(flag, "card__flag")}${escapeHtml(item.name)}</h3>
+              <p class="card__meta">${isTeam ? "" : teamMark(item.teamShort, color, "sm")}<span>${metaHtml}</span></p>
             </div>
             <div class="card__points">
               <span class="points-label">Очки</span>
@@ -280,7 +307,12 @@ export function renderTable(items, context) {
       const rankClass = item.position === 1 ? " rank--1" : item.position === 2 ? " rank--2" : item.position === 3 ? " rank--3" : "";
       const teamDrivers = isTeam ? context.driversByTeam?.get(item.id) || [] : [];
       const driversCell = teamDrivers
-        .map((driver) => escapeHtml(driver.name.split(" ").slice(-1)[0]))
+        .map(
+          (driver) =>
+            `${flagMarkup(driver.flag, "flag-icon--xs")}${escapeHtml(
+              driver.name.split(" ").slice(-1)[0]
+            )}`
+        )
         .join(" · ");
 
       return `
@@ -289,15 +321,15 @@ export function renderTable(items, context) {
           <th scope="row">
             ${
               isTeam
-                ? `<div class="team-cell"><span class="team-dot" style="--team-color:${escapeHtml(color)}"></span><strong>${escapeHtml(item.name)}</strong></div>`
-                : `<div class="driver-cell"><span class="flag" aria-hidden="true">${item.flag || ""}</span>
+                ? `<div class="team-cell">${teamMark(item.short || "N/A", color, "sm")}<strong>${escapeHtml(item.name)}</strong></div>`
+                : `<div class="driver-cell">${flagMarkup(item.flag, "flag-icon driver-cell__flag")}
                    <span><strong>${escapeHtml(item.name)}</strong><small>#${escapeHtml(item.number)}</small></span></div>`
             }
           </th>
           ${
             isTeam
               ? `<td><div class="team-cell">${driversCell || "—"}</div></td>`
-              : `<td><div class="team-cell"><span class="team-dot" style="--team-color:${escapeHtml(color)}"></span>${escapeHtml(item.teamName)}</div></td>`
+              : `<td><div class="team-cell">${teamMark(item.teamShort, color, "sm")}${escapeHtml(item.teamName)}</div></td>`
           }
           <td class="num">${item.points}</td>
           <td class="num">${item.max}</td>

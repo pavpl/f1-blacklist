@@ -1,5 +1,5 @@
 /* Offline-friendly shell. API data is cached by the app in localStorage. */
-const CACHE = "f1-blacklist-v5";
+const CACHE = "f1-blacklist-v6";
 const ASSETS = [
   "./",
   "./index.html",
@@ -9,6 +9,22 @@ const ASSETS = [
   "./api.js",
   "./data.js",
   "./render.js",
+  "./assets/flags/ar.svg",
+  "./assets/flags/au.svg",
+  "./assets/flags/br.svg",
+  "./assets/flags/ca.svg",
+  "./assets/flags/de.svg",
+  "./assets/flags/es.svg",
+  "./assets/flags/fi.svg",
+  "./assets/flags/fr.svg",
+  "./assets/flags/gb.svg",
+  "./assets/flags/it.svg",
+  "./assets/flags/jp.svg",
+  "./assets/flags/mc.svg",
+  "./assets/flags/mx.svg",
+  "./assets/flags/nl.svg",
+  "./assets/flags/nz.svg",
+  "./assets/flags/th.svg",
   "./favicon.svg",
   "./site.webmanifest",
   "./icon-192.png",
