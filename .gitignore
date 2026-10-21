@@ -3,3 +3,5 @@ Thumbs.db
 *.log
 .idea/
 .vscode/
+node_modules/
+coverage/

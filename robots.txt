@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pavpl.github.io/f1-blacklist/sitemap.xml

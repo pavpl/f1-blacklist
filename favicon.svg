@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="F1 Blacklist">
+  <rect width="64" height="64" rx="12" fill="#0a0a0c"/>
+  <path d="M0 64 29 0h15L15 64Z" fill="#e10600"/>
+  <path d="M35 0h9L15 64H6Z" fill="#ff4d4d" opacity=".55"/>
+  <text x="33" y="46" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="34" font-weight="900" fill="#ece9e4">B</text>
+</svg>

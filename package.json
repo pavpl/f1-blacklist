@@ -1,0 +1,15 @@
+{
+  "name": "f1-blacklist",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Неофициальный калькулятор математических шансов на титул Формулы-1 2026.",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check data.js && node --check calc.js && node --check api.js && node --check render.js && node --check app.js && node --check sw.js && node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
