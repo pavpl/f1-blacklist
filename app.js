@@ -571,7 +571,9 @@ function renderContentUI() {
   if (eliminated.length) {
     html += renderSection("Выбыли", eliminatedLabel, renderCards(eliminated, context), {
       details: true,
-      open: alive.length === 0 || Boolean(state.query),
+      // In the "all" filter the full list must be visible, not hidden behind a
+      // collapsed group. The group stays collapsible for users who want it compact.
+      open: true,
     });
   }
   els.content.innerHTML = html || renderEmpty("noResults");
